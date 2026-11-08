@@ -1,1 +1,36 @@
 
+name: Build TOKENIX (Windows x64)
+
+'on':
+  workflow_dispatch:
+  push:
+    branches:
+      - main
+      - master
+
+jobs:
+  build:
+    name: Compile TOKENIX
+    runs-on: windows-latest
+
+    steps:
+      - name: Download source
+        uses: actions/checkout@v4
+
+      - name: Set up Microsoft C++ compiler
+        uses: ilammy/msvc-dev-cmd@v1
+        with:
+          arch: x64
+
+      - name: Compile standalone EXE
+        shell: cmd
+        run: |
+          if not exist build mkdir build
+          cl /nologo /std:c++17 /O2 /EHsc /MT /DUNICODE /D_UNICODE /DWIN32_LEAN_AND_MEAN src\main.cpp /link /SUBSYSTEM:WINDOWS user32.lib gdi32.lib /OUT:build\TOKENIX.exe
+
+      - name: Upload TOKENIX
+        uses: actions/upload-artifact@v4
+        with:
+          name: TOKENIX-Standalone-Windows-x64
+          path: build/TOKENIX.exe
+          if-no-files-found: error
